@@ -30,7 +30,7 @@ async def output_enrichment(domains):
 @app.agent(source_topic, concurrency=10)
 async def lookup_enrichment(domains):
     async for domain in domains:
-        response = Enrichment(domain.domain).get()
+        response = await Enrichment(domain.domain).get()
         await output_enrichment.send(value=response)
 
 # Produce passivedns records
@@ -43,7 +43,7 @@ async def output_passivedns(domains):
 @app.agent(source_topic, concurrency=10)
 async def lookup_passivedns(domains):
     async for domain in domains:
-        response = PassiveDNS(domain.domain).get()
+        response = await PassiveDNS(domain.domain).get()
         await output_passivedns.send(value=response)
     
 # Produce ssl records
@@ -56,5 +56,5 @@ async def output_ssl(domains):
 @app.agent(source_topic, concurrency=10)
 async def lookup_ssl(domains):
     async for domain in domains:
-        response = SSL(domain.domain).get()
+        response = await SSL(domain.domain).get()
         await output_ssl.send(value=response)
