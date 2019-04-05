@@ -1,9 +1,9 @@
-from schemas import PassiveDnsSchema, WhoisSchema, SSLSearchSchema, DomainSchema, EnrichSchema
-from api import PassiveDNS, Enrichment, Whois, SSL
+from api import PassiveTotal, Threatstream
+import schema as Schema
 import faust
 
 app = faust.App('riskiq-enricher', broker='kafka://localhost')
-source_topic = app.topic('input-domains', value_type=DomainSchema)
+source_topic = app.topic('input-domains', value_type=Schema.Domain)
 result_table = app.Table('output-domains', default=dict)
 
 # Produce whois records
@@ -17,10 +17,10 @@ async def output_whois(results):
 @app.agent(source_topic, concurrency=10)
 async def lookup_whois(domains):
     async for domain in domains:
-        response = await Whois(domain.domain).get()
+        response = await PassiveTotal.Whois(domain.domain).get()
         result = {'domain': domain, 'response': response}
         await output_whois.send(value=result)
-
+    
 
 # Produce enrichment records
 @app.agent(app.topic('output-domains-enrichment'))
@@ -33,7 +33,7 @@ async def output_enrichment(results):
 @app.agent(source_topic, concurrency=10)
 async def lookup_enrichment(domains):
     async for domain in domains:
-        response = await Enrichment(domain.domain).get()
+        response = await PassiveTotal.Enrichment(domain.domain).get()
         result = {'domain': domain, 'response': response}
         await output_enrichment.send(value=result)
 
@@ -48,7 +48,7 @@ async def output_passivedns(results):
 @app.agent(source_topic, concurrency=10)
 async def lookup_passivedns(domains):
     async for domain in domains:
-        response = await PassiveDNS(domain.domain).get()
+        response = await PassiveTotal.PassiveDNS(domain.domain).get()
         result = {'domain': domain, 'response': response}
         await output_passivedns.send(value=result)
     

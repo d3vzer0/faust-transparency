@@ -1,4 +1,4 @@
-from api import PassiveTotal
+from api.passivetotal.api_riskiq import PassiveTotal
 
 class InvalidField(Exception):
     pass
