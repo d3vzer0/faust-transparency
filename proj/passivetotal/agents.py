@@ -1,10 +1,10 @@
-from api import PassiveTotal, Threatstream
-import schema as Schema
-import faust
+from proj.passivetotal.api import PassiveTotal
+from proj.app import app
+import proj.passivetotal.models as Schema
 
-app = faust.App('riskiq-enricher', broker='kafka://localhost')
-source_topic = app.topic('input-domains', value_type=Schema.Domain)
-result_table = app.Table('output-domains', default=dict)
+
+source_topic = app.topic('input-enrich-domains', value_type=Schema.Domain)
+result_table = app.Table('output-enrich-domains', default=dict)
 
 # Produce whois records
 @app.agent(app.topic('output-domains-whois'))
@@ -19,8 +19,7 @@ async def lookup_whois(domains):
     async for domain in domains:
         response = await PassiveTotal.Whois(domain.domain).get()
         result = {'domain': domain, 'response': response}
-        await output_whois.send(value=result)
-    
+        await output_whois.send(value=result)    
 
 # Produce enrichment records
 @app.agent(app.topic('output-domains-enrichment'))
@@ -51,18 +50,19 @@ async def lookup_passivedns(domains):
         response = await PassiveTotal.PassiveDNS(domain.domain).get()
         result = {'domain': domain, 'response': response}
         await output_passivedns.send(value=result)
-    
-# # Produce ssl records
-# @app.agent(app.topic('output-domains-ssl'))
-# async def output_ssl(results):
-#     async for result in results:
-#         result_table[result['domain']]['ssl'] = result['response']
-#         yield result
 
-# # Lookup ssl records
-# @app.agent(source_topic, concurrency=10)
-# async def lookup_ssl(domains):
-#     async for domain in domains:
-#         response = await SSL(domain.domain).get()
-#         result = {'domain': domain, 'response': response}
-#         await output_ssl.send(value=result)
+# Produce ssl records
+@app.agent(app.topic('output-domains-ssl'))
+async def output_ssl(results):
+    async for result in results:
+        result_table[result['domain']]['ssl'] = result['response']
+        yield result
+
+# Lookup ssl records
+@app.agent(source_topic, concurrency=10)
+async def lookup_ssl(domains):
+    async for domain in domains:
+        response = await SSL(domain.domain).get()
+        result = {'domain': domain, 'response': response}
+        await output_ssl.send(value=result)
+

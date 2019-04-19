@@ -1,11 +1,11 @@
-from config import config
+from proj.config import config
 import aiohttp
 
 class PassiveTotal:
-    def __init__(self):
-        self.username = config['riskiq']['username']
-        self.api_key = config['riskiq']['api_key']
-        self.base_url = config['riskiq']['base_url']
+    def __init__(self, username, api_key, base_url='https://api.passivetotal.org'):
+        self.username = username
+        self.api_key = api_key
+        self.base_url = base_url
 
     async def request(self, path, query):
         url = '{0}{1}'.format(self.base_url, path)

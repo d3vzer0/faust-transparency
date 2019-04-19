@@ -1,4 +1,4 @@
-from api.passivetotal.api_riskiq import PassiveTotal
+from proj.passivetotal.api.riskiq import PassiveTotal
 
 class Enrichment(PassiveTotal):
     def __init__(self, search_value):
