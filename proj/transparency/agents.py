@@ -10,7 +10,6 @@ cert_topic = app.topic('ct-certs')
 # Tables
 states_table = app.Table('ct-source-states', default=int)
 
-
 @app.agent(sources_topic, concurrency=20)
 async def get_tree_size(sources):
     async for source in sources:
@@ -20,6 +19,7 @@ async def get_tree_size(sources):
             await update_treesize.send(value=result)
         elif stats['tree_size'] > states_table[source]:
             await changed_topic.send(value=result)
+    
 
 
 @app.agent(changed_topic, concurrency=20)
@@ -28,15 +28,18 @@ async def process_treesize(sources):
         min_count = states_table[source['source']]
         max_count = source['stats']['tree_size'] + min_count
         result = await Records(source['source']).get(min_count, max_count)
+        await update_treesize.send(value={'source': source['source'], 
+            'stats': {'tree_size':max_count}})
         for certificate in result['entries']:
-            await process_entry.send(value=certificate)
+            parsed_cert = MerkleTree(certificate).parse()
+            await cert_topic.send(value=parsed_cert)
 
-@app.agent()
-async def process_entry(entries):
-    async for entry in entries:
-        parse_entry = MerkleTree(entry).parse()
-        print(parse_entry)
-        # cert_topic.send(value=certificate)
+
+@app.agent(cert_topic)
+async def process_certs(certificates):
+    async for certificate in certificates:
+        print(certificate)
+
 
 @app.agent()
 async def update_treesize(sources):
@@ -47,7 +50,7 @@ async def update_treesize(sources):
 
 
 
-@app.timer(interval=10)
+@app.timer(interval=15)
 async def get_sources():
     blacklist = config['transparency']['blacklist']
     sources = await Sources(config['transparency']['base_url']).get()
