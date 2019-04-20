@@ -15,16 +15,16 @@ async def get_tree_size(sources):
     async for source in sources:
         stats = await Records(source).latest()
         result = {'source': source, 'stats': stats}
+        print('Source: {0} - New TreeSize: {1} - Old TreeSize: {2}'.format(source, stats['tree_size'], states_table[source]))
         if not source in states_table:
             await update_treesize.send(value=result)
         elif stats['tree_size'] > states_table[source]:
             await changed_topic.send(value=result)
     
 
-
 @app.agent(changed_topic, concurrency=20)
-async def process_treesize(sources):
-    async for source in sources:
+async def process_sources(sources):
+    async for source in sources:    
         min_count = states_table[source['source']]
         max_count = source['stats']['tree_size'] + min_count
         result = await Records(source['source']).get(min_count, max_count)
@@ -35,12 +35,6 @@ async def process_treesize(sources):
             await cert_topic.send(value=parsed_cert)
 
 
-@app.agent(cert_topic)
-async def process_certs(certificates):
-    async for certificate in certificates:
-        print(certificate)
-
-
 @app.agent()
 async def update_treesize(sources):
     async for source in sources:
@@ -49,11 +43,11 @@ async def update_treesize(sources):
         states_table[source_url] = source_size
 
 
-
 @app.timer(interval=15)
 async def get_sources():
     blacklist = config['transparency']['blacklist']
     sources = await Sources(config['transparency']['base_url']).get()
+    print('Pulling latest source file from Google')
     for source in sources['logs']:
         if not source['url'] in blacklist: await sources_topic.send(value=source['url'])
 
