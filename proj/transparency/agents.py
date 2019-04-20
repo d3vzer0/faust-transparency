@@ -1,6 +1,6 @@
 from proj.app import app
 from proj.config import config
-from proj.transparency.api import Records, Sources
+from proj.transparency.api import Records, Sources, MerkleTree
 
 # Topics
 sources_topic = app.topic('ct-sources')
@@ -27,13 +27,16 @@ async def process_treesize(sources):
     async for source in sources:
         min_count = states_table[source['source']]
         max_count = source['stats']['tree_size'] + min_count
-        certs = await Records(source).get(min_count, max_count)
-        await process_certs.send(value=certs)
+        result = await Records(source['source']).get(min_count, max_count)
+        for certificate in result['entries']:
+            await process_entry.send(value=certificate)
 
 @app.agent()
-async def process_certs(certificates):
-    async for certificate in certificates:
-        cert_topic.send(value=certificate)
+async def process_entry(entries):
+    async for entry in entries:
+        parse_entry = MerkleTree(entry).parse()
+        print(parse_entry)
+        # cert_topic.send(value=certificate)
 
 @app.agent()
 async def update_treesize(sources):
