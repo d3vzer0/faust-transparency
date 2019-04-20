@@ -25,3 +25,15 @@ transparency:
     - clicky.ct.letsencrypt.org/
     - ct.filippo.io/behindthesofa/
     - ctlog.gdca.com.cn/
+    - plausible.ct.nordu.net/
+    - nessie2018.ct.digicert.com/log/
+    - nessie2020.ct.digicert.com/log/
+    - nessie2019.ct.digicert.com/log/
+    - plausible.ct.nordu.net/log/
+    - yeti2022.ct.digicert.com/log/
+    - yeti2021.ct.digicert.com/log/
+    - yeti2020.ct.digicert.com/log/
+    - yeti2019.ct.digicert.com/log/
+    - yeti2018.ct.digicert.com/log/
+    - nessie2021.ct.digicert.com/log/
+    - nessie2022.ct.digicert.com/log/
