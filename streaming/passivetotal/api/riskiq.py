@@ -1,4 +1,4 @@
-from proj.config import config
+from streaming.config import config
 import aiohttp
 
 class PassiveTotal:

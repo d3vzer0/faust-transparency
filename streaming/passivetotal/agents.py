@@ -1,6 +1,6 @@
-from proj.passivetotal.api import PassiveTotal
-from proj.app import app
-import proj.passivetotal.models as Schema
+from streaming.passivetotal.api import PassiveTotal
+from streaming.app import app
+import streaming.passivetotal.models as Schema
 
 
 source_topic = app.topic('input-enrich-domains', value_type=Schema.Domain)

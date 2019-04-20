@@ -1,4 +1,4 @@
-from proj.passivetotal.api.riskiq import PassiveTotal
+from streaming.passivetotal.api.riskiq import PassiveTotal
 
 class PassiveDNS(PassiveTotal):
     def __init__(self, search_value):

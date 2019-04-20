@@ -1,6 +1,6 @@
-from proj.app import app
-from proj.config import config
-from proj.transparency.api import Records, Sources, MerkleTree
+from streaming.app import app
+from streaming.config import config
+from streaming.transparency.api import Records, Sources, MerkleTree
 
 # Topics
 sources_topic = app.topic('ct-sources')
