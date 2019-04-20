@@ -15,10 +15,11 @@ async def get_tree_size(sources):
     async for source in sources:
         stats = await Records(source).latest()
         result = {'source': source, 'stats': stats}
-        print('Source: {0} - New TreeSize: {1} - Old TreeSize: {2}'.format(source, stats['tree_size'], states_table[source]))
         if not source in states_table:
             await update_treesize.send(value=result)
         elif stats['tree_size'] > states_table[source]:
+            print('Source: {0} - New TreeSize: {1} - Old TreeSize: {2}'.format(source,
+                stats['tree_size'], states_table[source]))
             await changed_topic.send(value=result)
     
 
