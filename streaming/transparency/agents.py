@@ -27,7 +27,7 @@ async def get_tree_size(sources):
 async def process_sources(sources):
     async for source in sources:    
         min_count = states_table[source['source']]
-        max_count = source['stats']['tree_size'] + min_count
+        max_count = source['stats']['tree_size']
         result = await Records(source['source']).get(min_count, max_count)
         await update_treesize.send(value={'source': source['source'], 
             'stats': {'tree_size':max_count}})
