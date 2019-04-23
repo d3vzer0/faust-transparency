@@ -10,24 +10,27 @@ cert_topic = app.topic('ct-certs')
 # Tables
 states_table = app.Table('ct-source-states', default=int)
 
-@app.agent(sources_topic, concurrency=20)
+@app.agent(sources_topic, concurrency=10)
 async def get_tree_size(sources):
     async for source in sources:
-        stats = await Records(source).latest()
-        result = {'source': source, 'stats': stats}
-        if not source in states_table:
-            await update_treesize.send(value=result)
-        elif stats['tree_size'] > states_table[source]:
-            print('Source: {0} - New TreeSize: {1} - Old TreeSize: {2}'.format(source,
-                stats['tree_size'], states_table[source]))
-            await changed_topic.send(value=result)
+        try:
+            stats = await Records(source).latest()
+            result = {'source': source, 'stats': stats}
+            if not source in states_table: await update_treesize.send(value=result)
+            elif stats['tree_size'] > states_table[source]:  await changed_topic.send(value=result) 
+        except Exception as err:
+            print(err)
+            pass
     
 
-@app.agent(changed_topic, concurrency=20)
+@app.agent(changed_topic, concurrency=10)   
 async def process_sources(sources):
     async for source in sources:    
         min_count = states_table[source['source']]
         max_count = source['stats']['tree_size']
+        print('Source: {0} - New Tree Size: {1} - Old Tree Size: {2}'.format(source['source'],
+            max_count, min_count))
+
         result = await Records(source['source']).get(min_count, max_count)
         await update_treesize.send(value={'source': source['source'], 
             'stats': {'tree_size':max_count}})

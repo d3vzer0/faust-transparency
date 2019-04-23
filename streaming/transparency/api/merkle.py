@@ -15,7 +15,7 @@ class Certificate:
                 for component in issuer.get_components()},
             'not_after': self.certificate.get_notAfter().decode('utf-8'),
             'not_before': self.certificate.get_notBefore().decode('utf-8'),
-            'serial': self.certificate.get_serial_number(),
+            'serial': str(self.certificate.get_serial_number()),
             'algorithm': self.certificate.get_signature_algorithm().decode('utf-8'),
             'version': self.certificate.get_version(),
             'subject': {component[0].decode('utf-8'):component[1].decode('utf-8') \
