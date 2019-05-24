@@ -36,14 +36,18 @@ class MerkleTree(Certificate):
         entry = Certificate(crypto.load_certificate(crypto.FILETYPE_ASN1, data_object.LeafCert.CertData)).details()
         chain = [Certificate(crypto.load_certificate(crypto.FILETYPE_ASN1, cert.CertData)).details() \
             for cert in data_object.Chain]
-        return {'pre_certificate':entry, 'precertificate_chain':chain}
+        result = {'type':'precert', 'entry_cn':entry['subject']['CN'], 'issuer_cn':entry['issuer']['CN'], 'fingerprint':entry['fingerprint'],
+            'not_before':entry['not_before'], 'not_after':entry['not_after']}
+        return result
        
     def log(self):
         extra_data = ctl.CertificateChain.parse(self.extra_data)
         entry = Certificate(crypto.load_certificate(crypto.FILETYPE_ASN1, ctl.Certificate.parse(self.leaf_data.Entry).CertData)).details()
         chain = [Certificate(crypto.load_certificate(crypto.FILETYPE_ASN1, cert.CertData)).details() \
             for cert in extra_data.Chain]
-        return {'entry':entry, 'chain':chain}
+        result = {'type':'log', 'entry_cn':entry['subject']['CN'], 'issuer_cn':entry['issuer']['CN'], 'fingerprint':entry['fingerprint'],
+            'not_before':entry['not_before'], 'not_after':entry['not_after']}
+        return result
 
     def parse(self):
         parse_functions = { 'X509LogEntryType': self.log,
