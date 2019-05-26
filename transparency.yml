@@ -37,3 +37,4 @@ transparency:
     - yeti2018.ct.digicert.com/log/
     - nessie2021.ct.digicert.com/log/
     - nessie2022.ct.digicert.com/log/
+    - ct.googleapis.com/logs/solera2023/

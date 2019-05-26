@@ -1,0 +1,16 @@
+Flask
+flask-mongoengine
+Flask-RESTful
+Flask-Script
+Flask-WTF
+Jinja2
+mongoengine
+pymongo
+python-geoip
+python-magic
+pyotp
+urllib3
+Werkzeug
+WTForms
+flask-jwt-extended
+flask-cors

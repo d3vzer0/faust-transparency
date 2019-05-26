@@ -25,18 +25,24 @@ async def get_tree_size(sources):
 
 @app.agent(changed_topic, concurrency=10)   
 async def process_sources(sources):
-    async for source in sources:    
-        min_count = states_table[source['source']]
-        max_count = source['stats']['tree_size']
-        print('Source: {0} - New Tree Size: {1} - Old Tree Size: {2}'.format(source['source'],
-            max_count, min_count))
+    async for source in sources:
+        try:
+            min_count = states_table[source['source']]
+            max_count = source['stats']['tree_size']
+            print('Source: {0} - New Tree Size: {1} - Old Tree Size: {2}'.format(source['source'],
+                max_count, min_count))
 
-        result = await Records(source['source']).get(min_count, max_count)
-        await update_treesize.send(value={'source': source['source'], 
-            'stats': {'tree_size':max_count}})
-        for certificate in result['entries']:
-            parsed_cert = MerkleTree(certificate).parse()
-            await cert_topic.send(value=parsed_cert)
+            result = await Records(source['source']).get(min_count, max_count)
+            await update_treesize.send(value={'source': source['source'], 
+                'stats': {'tree_size':max_count}})
+
+            for certificate in result['entries']:
+                parsed_cert = MerkleTree(certificate).parse()
+                await cert_topic.send(value=parsed_cert)
+
+        except Exception as err:
+            print(err)
+            pass
 
 
 @app.agent()
@@ -54,6 +60,3 @@ async def get_sources():
     print('Pulling latest source file from Google')
     for source in sources['logs']:
         if not source['url'] in blacklist: await sources_topic.send(value=source['url'])
-
-
-
