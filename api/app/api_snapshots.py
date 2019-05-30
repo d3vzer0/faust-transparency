@@ -4,7 +4,7 @@ from flask_restful import Api, Resource, reqparse
 
 
 class APISnapshot(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def get(self, snapshot_id):
         snapshot = Snapshots.objects.get(screenshot=bson.objectid.ObjectId(snapshot_id))
@@ -14,11 +14,11 @@ class APISnapshot(Resource):
         response.headers['Content-Type'] = "image/png"
         return response
 
-api.add_resource(APIScreenshot, '/api/v1/snapshot/<string:snapshot_id>')
+api.add_resource(APISnapshot, '/api/v1/snapshot/<string:snapshot_id>')
 
 
 class APISnapshots(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def __init__(self):
         self.args = reqparse.RequestParser()
@@ -32,4 +32,4 @@ class APISnapshots(Resource):
         results = json.loads(get_snaps.to_json())
         return results
 
-api.add_resource(APIScreenshots, '/api/v1/snapshots')
+api.add_resource(APISnapshots, '/api/v1/snapshots')

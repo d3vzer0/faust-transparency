@@ -5,7 +5,7 @@ from flask_restful import Api, Resource, reqparse
 from app.models import Matches
 
 class APIMatches(Resource):
-    decorators = [jwt_required]
+    decorators = []
 
     def __init__(self):
         self.args = reqparse.RequestParser()
@@ -24,5 +24,4 @@ class APIMatches(Resource):
         return results
 
 
-api.add_resource(APIHits, '/api/v1/matches')
-
+api.add_resource(APIMatches, '/api/v1/matches')

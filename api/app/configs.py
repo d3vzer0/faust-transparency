@@ -9,5 +9,5 @@ app.config['CORS_DOMAIN'] = os.getenv('CORS_DOMAIN', '*')
 app.config['MONGODB_SETTINGS'] = {
     'db': 'phishyme',
     'host': os.getenv('DBHOST', 'localhost'),
-    'port': os.getenv('DBPORT', '27017')
+    'port': os.getenv('DBPORT', 27017)
 }

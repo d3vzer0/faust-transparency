@@ -27,9 +27,13 @@ pycparser==2.19
 pyOpenSSL==19.0.0
 python-dateutil==2.8.0
 PyYAML==5.1
+python-rocksdb==0.7.0
+fuzzywuzzy
+python-Levenshtein
 requests==2.21.0
 robinhood-aiokafka==1.0.3
 six==1.12.0
+selenium
 terminaltables==3.1.0
 typing-extensions==3.7.2
 urllib3==1.24.2

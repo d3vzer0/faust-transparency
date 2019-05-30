@@ -16,6 +16,7 @@ class Records:
         try:
             async with aiohttp.ClientSession(timeout=self.timeout) as session:
                 return await self.request(session, url)
+    
         except Exception as err:
             print('Unable to fetch records: {0}'.format(url))
             return err

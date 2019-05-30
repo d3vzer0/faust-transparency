@@ -2,16 +2,20 @@ from flask import Flask
 from flask_restful import Api, Resource
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from flask_mongoengine import MongoEngine
 
-#Initialize Flask Instance
+# Initialize Flask Instance and load configuration
 app = Flask(__name__)
-api = Api(app)
-jwt = JWTManager(app)
+from  app.configs import *
 
 # Initialize DB and load models and views
-from  app.configs import *
-CORS(app, resources={r"*": {"origins": "*"}})
+api = Api(app)
+jwt = JWTManager(app)
+cors = CORS(app, resources={r"*": {"origins": "*"}})
 db = MongoEngine(app)
 
 # Import views
-from app import api_search
+from app import api_generic
+from app import api_matches
+from app import api_snapshots
+from app import api_filters
