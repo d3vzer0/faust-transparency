@@ -6,6 +6,11 @@ class Match:
     def __init__(self, url):
         self.url = url
 
+    def get(self, skip, limit):
+        matches_object = Matches.objects(url__contains=self.url).order_by('-timestamp')
+        result = {'count':matches_object.count(), 'results':json.loads(matches_object.skip(skip).limit(limit).to_json())}
+        return result
+
     def create(self, datasouce):
         try:
             target_object = Matches(url=self.url, datasource=datasource).save()

@@ -2,7 +2,7 @@
 from app import app, api
 from flask import Flask, request, g
 from flask_restful import Api, Resource, reqparse
-from app.models import Matches
+from app.operations import Match
 
 class APIMatches(Resource):
     decorators = []
@@ -16,12 +16,8 @@ class APIMatches(Resource):
 
     def get(self):
         args = self.args.parse_args()
-        matches_object = Matches.objects(target__contains=args['search']).order_by('-timestamp')
-        matches_count = targets_object.count()
-        get_matches = matches_object.skip(args.skip).limit(args.limit)
-        all_hits = json.loads(get_matches.to_json())
-        results = {'count':matches_count, 'results':all_hits}
+        results = Match(args.search).get(args.skip, args.limit)
         return results
 
 
-api.add_resource(APIMatches, '/api/v1/matches')
+api.add_resource(APIMatches, '/api/v1/hits')

@@ -30,6 +30,7 @@ export default {
         regex_value: '',
     }
   },
+  
   methods: {
    create_regex () {
     this.$http.post('filters/regex', { value: this.regex_value, score: this.regex_score })

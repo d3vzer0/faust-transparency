@@ -6,7 +6,7 @@
           URL
           </b-col>
           <b-col>
-            {{screenshot.target}}
+            {{screenshot.url}}
           </b-col>
         </b-row>
         <b-row>
@@ -51,13 +51,13 @@ export default {
     this.get_screenshots()
   },
   methods: {
-   
     get_screenshots () {
       this.$http
-        .get('screenshots', {params:{search:this.search_value}})
+        .get('snapshots', {params:{search:this.search_value}})
         .then(response => this.parse_screenshots(response))
      },
      parse_screenshots (response) {
+      this.screenshots = []
       for (let [index, element] of response.data.entries()) {
         var img_data = this.download_image(element).then(response => {
           element.data = response
@@ -72,7 +72,7 @@ export default {
     },
     download_image (element) {
       var image_id = element.screenshot['$oid']
-      var image_url = `${axios.defaults.baseURL}screenshot/${image_id}`
+      var image_url = `${axios.defaults.baseURL}snapshot/${image_id}`
       return this.$http.get(image_url, { responseType: 'arraybuffer'}).then(response => {
         var img_object = new Buffer(response.data, 'binary').toString('base64')
         var img_src = 'data:image/png;base64, ' + img_object

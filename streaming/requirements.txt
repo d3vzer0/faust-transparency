@@ -30,6 +30,7 @@ PyYAML==5.1
 python-rocksdb==0.7.0
 fuzzywuzzy
 python-Levenshtein
+mongoengine
 requests==2.21.0
 robinhood-aiokafka==1.0.3
 six==1.12.0

@@ -22,19 +22,20 @@ export default {
       limit: 30,
       expected_fields: {
         timestamp: 'timestamp.$date',
-        domain: 'domain',
-        pattern_match: 'pattern_match',
-        source: 'source',
+        url: 'url',
+        pattern_match: 'matching.value',
+        source_filter: 'matching.name',
+        datasource: 'datasource',
         id: '_id.$oid',
         _showDetails: false
       },
       output: {
         timestamp: { label: 'Timestamp' },
-        domain: { label:'Domain' },
-        pattern_match: { label:'Pattern' },
-        source: { label:'Source' },
+        url: { label:'Url' },
+        datasource: { label:'Datasource' },
+        source_filter: { label: 'Filter type'},
+        pattern_match: { label:'Filter match' },
       }
-
     }
   }
 }

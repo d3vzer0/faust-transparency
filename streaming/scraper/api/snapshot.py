@@ -1,4 +1,4 @@
-from streaming.wordmatching.api.models import Snapshots
+from streaming.scraper.api.models import Snapshots
 import hashlib
 import mongoengine
 

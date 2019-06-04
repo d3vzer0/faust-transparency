@@ -1,31 +1,33 @@
-FROM python:3.6
+FROM debian:buster-slim
 
-RUN apt-get update && apt-get install -y build-essential python3-dev
-RUN apt-get install -y build-essential libsnappy-dev zlib1g-dev libbz2-dev libgflags-dev liblz4-dev
-RUN apt-get install -y librocksdb-dev
+RUN apt-get update -y --fix-missing \
+  && apt-get install -y \
+    build-essential \
+    libgflags-dev \
+    libsnappy-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    liblz4-dev \
+    python3-pip \
+    librocksdb-dev
 
-RUN cd /tmp \
-  && curl -sL rocksdb.tar.gz https://github.com/facebook/rocksdb/archive/v6.0.2.tar.gz > rocksdb.tar.gz \
-  && tar fvxz rocksdb.tar.gz \
-  && cd rocksdb-6.0.2 \
-  && make shared_lib \
-  && make install-shared
+ENV LD_LIBRARY_PATH=/usr/local/lib PORTABLE=1
 
+RUN pip3 install python-rocksdb
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-RUN apt-get remove -y \
-  build-essential \
-  && rm -rf /tmp
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 WORKDIR /opt/
 COPY . ./streaming/
-
 
 ARG STREAM_NAME=streaming.transparency
 ENV STREAM_NAME="${STREAM_NAME}"
 
 ARG KAFKA_HOST=kafka://kafka:9092
 ENV KAFKA_HOST="${KAFKA_HOST}"
+
+ARG DBHOST=mongodb
+ENV DBHOST="${DBHOST}"
 
 CMD ["faust", "-A", "streaming.app", "worker"]

@@ -20,8 +20,13 @@ config = {
         'host': os.getenv('GRID_HOST', 'localhost:4444'),
         'browser': os.getenv('GRID_BROWSER', 'chrome')
     },
+    "mongo": {
+        'db': 'phishyme',
+        'host': os.getenv('DBHOST', 'localhost'),
+        'port': os.getenv('DBPORT', 27017)
+    },
     'stream': {
         'app': os.getenv('STREAM_NAME', 'streaming.transparency'),
-        'host': os.getenv('KAFKA_HOST', 'kafka://localhost:29092')
+        'host': os.getenv('KAFKA_HOST', 'kafka://127.0.0.1:29092')
     }
 }

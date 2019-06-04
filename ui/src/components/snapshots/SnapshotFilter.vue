@@ -16,27 +16,29 @@
 <script>
 import Vue from 'vue'
 import EventBus from '@/eventbus'
+Vue.use(require('vue-moment'))
 
 export default {
-  name: 'ScreenshotsFilter',
-  data () {
+  name: 'HitsFilter',
+  data(){
     return {
     }
   },
-  methods: {
-   filter_screenshots () {
-     EventBus.$emit('refreshscreenshots', this.$store.getters['target/domain'])
-   }
-  },
   computed: {
-     search_filter: {
+    search_filter: {
       get () {
-        return this.$store.getters['target/domain'];
+        return this.$store.getters['target/domain']
       },
       set (value) {
-        this.$store.commit('target/update_domain', value);
+        this.$store.commit('target/update_domain', value)
       }
     }
-  }
-};
+  },
+  methods: {
+    filter_hits () {
+      console.log(1)
+      EventBus.$emit('refreshscreenshots', this.search_filter)
+    }
+  } 
+}
 </script>

@@ -24,6 +24,9 @@ export default {
     return {
     }
   },
+  beforeDestroy () {
+    EventBus.$off('refreshtable')
+  },
   computed: {
     search_filter: {
       get () {

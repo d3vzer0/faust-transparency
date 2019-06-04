@@ -12,20 +12,22 @@ class Records:
         
         
     async def get(self, min_records, max_records):
-        url = 'http://{0}ct/v1/get-entries?start={1}&end={2}'.format(self.source, min_records, max_records)
+        url = 'https://{0}ct/v1/get-entries?start={1}&end={2}'.format(self.source, min_records, max_records)
         try:
             async with aiohttp.ClientSession(timeout=self.timeout) as session:
                 return await self.request(session, url)
     
         except Exception as err:
+            print(err)
             print('Unable to fetch records: {0}'.format(url))
-            return err
+            return None
 
     async def latest(self):
-        url = 'http://{0}ct/v1/get-sth'.format(self.source)
+        url = 'https://{0}ct/v1/get-sth'.format(self.source)
         try:
             async with aiohttp.ClientSession(timeout=self.timeout) as session:
                 return await self.request(session, url)
         except Exception as err:
+            print(err)
             print('Unable to fetch tree size: {0}'.format(url))
             return err

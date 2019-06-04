@@ -1,6 +1,9 @@
 from app import app, api
-from flask import Flask, request, g
+from flask import Flask, request, g, make_response
 from flask_restful import Api, Resource, reqparse
+from app.models import Snapshots
+import bson
+import json
 
 
 class APISnapshot(Resource):
@@ -28,7 +31,7 @@ class APISnapshots(Resource):
 
     def get(self):
         args = self.args.parse_args()
-        get_snaps = Snapshots.objects(target__contains=args.search).order_by('-timestamp').limit(args.max)
+        get_snaps = Snapshots.objects(url__contains=args.search).order_by('-timestamp').limit(args.max)
         results = json.loads(get_snaps.to_json())
         return results
 

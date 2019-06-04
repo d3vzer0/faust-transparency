@@ -5,6 +5,7 @@ from streaming.transparency.api import Records, Sources, MerkleTree
 # Topics
 sources_topic = app.topic('ct-sources')
 changed_topic = app.topic('ct-treesize-changed')
+update_topic = app.topic('ct-update-treesize')
 cert_topic = app.topic('ct-certs')
 
 # Tables
@@ -17,33 +18,34 @@ async def get_tree_size(sources):
             stats = await Records(source).latest()
             result = {'source': source, 'stats': stats}
             if not source in states_table: await update_treesize.send(value=result)
-            elif stats['tree_size'] > states_table[source]:  await changed_topic.send(value=result) 
+            if stats['tree_size'] > states_table[source]:  
+                await changed_topic.send(value=result) 
         except Exception as err:
             print(err)
             pass
     
 
-@app.agent(changed_topic, concurrency=10)   
+@app.agent(changed_topic, concurrency=10) 
 async def process_sources(sources):
     async for source in sources:
-        try:
-            min_count = states_table[source['source']]
-            max_count = source['stats']['tree_size']
-            print('Source: {0} - New Tree Size: {1} - Old Tree Size: {2}'.format(source['source'],
-                max_count, min_count))
-
-            result = await Records(source['source']).get(min_count, max_count)
+        min_count = states_table[source['source']]
+        max_count = source['stats']['tree_size']
+        results = await Records(source['source']).get(min_count, max_count)
+        if results:
             await update_treesize.send(value={'source': source['source'], 
                 'stats': {'tree_size':max_count}})
+            for certificate in results['entries']:
+                await decode_certs.send(value=certificate)
 
-            for certificate in result['entries']:
-                parsed_cert = MerkleTree(certificate).parse()
-                await cert_topic.send(value=parsed_cert)
 
+@app.agent()
+async def decode_certs(certificates):
+    async for certificate in certificates:
+        try:
+            parsed_cert = MerkleTree(certificate).parse()
+            await cert_topic.send(value=parsed_cert)
         except Exception as err:
-            print(err)
             pass
-
 
 @app.agent()
 async def update_treesize(sources):

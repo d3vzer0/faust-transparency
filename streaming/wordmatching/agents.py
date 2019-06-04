@@ -1,3 +1,5 @@
+from streaming.wordmatching.api.match import Match
+from streaming.wordmatching.api.models import Fuzzy, Regex, Whitelist
 from streaming.app import app
 from streaming.config import config
 from fuzzywuzzy import fuzz
@@ -36,9 +38,9 @@ async def fuzzy_match_ct(certificates):
     async for certificate in certificates:
         domain = certificate['entry_cn']
         for fuzzy in filters['fuzzy']:
-            compare = fuzz.partial_ratio(domain, fuzzy['string'])
+            compare = fuzz.partial_ratio(domain, fuzzy['value'])
             if compare >= int(fuzzy['likelihood']) and domain not in filters['whitelist']:
-                result = {'source':'fuzzy', 'input':fuzzy['string'], 
+                result = {'source':'fuzzy', 'input':fuzzy['value'], 
                     'value': domain, 'proto':'https' }
                 await matched_topic.send(value=result)
                 break
@@ -46,45 +48,50 @@ async def fuzzy_match_ct(certificates):
 @app.agent(update_topic)
 async def update_filters(matchers):
     async for matcher in matchers:
-
+        print(matcher)
         if matcher['type'] == 'regex':
             filters['regex'] = []
-            for entry in matcher['list']:
-                filters['regex'].append(re.compile(entry['regex']))
-                regex_scoring[entry['regex']] = entry['score']
+            regex_filters = Regex.objects()
+            for entry in regex_filters:
+                try:
+                    filters['regex'].append(re.compile(entry['value']))
+                    regex_scoring[entry['value']] = entry['score']
+                except Exception as err:
+                    pass
 
         elif matcher['type'] == 'fuzzy':
             filters['fuzzy'] = []
-            for entry in matcher['list']:
-                filters['fuzzy'].append({'string':entry['string'], 'likelihood':entry['likelihood']})
-                fuzzy_scoring[entry['string']] = entry['score']
+            fuzzy_filters = Fuzzy.objects()
+            for entry in fuzzy_filters:
+                filters['fuzzy'].append({'value':entry['value'], 'likelihood':entry['likelihood']})
+                fuzzy_scoring[entry['value']] = entry['score']
 
         elif matcher['type'] == 'whitelist':
             filters['whitelist'] = []
-            filters['whitelist'] = matcher['list']
+            whitelist = Whitelist.objects()
+            for entry in whitelist:
+                filters['whitelist'].append(entry['domain'])
+
+        print(filters)
+
+
+
+@app.agent(matched_topic)
+async def matched_certs(matches):
+    async for match in matches:
+        print(match['value'], match['source'], match['input'])
+        await Match(match['value']).create('transparency', match['source'], match['input'])
+
 
 @app.task
 async def load_fuzzy():
-    with open('streaming/wordmatching/config/fuzzy.csv') as fuzzy_file:
-        fuzzy_csv = csv.DictReader(fuzzy_file, delimiter=',')
-        fuzzy_list = [entry for entry in fuzzy_csv]
-        await update_topic.send(value={'type':'fuzzy', 'list':fuzzy_list})
+    await update_topic.send(value={'type':'fuzzy'})
 
 @app.task
 async def load_regex():
-    with open('streaming/wordmatching/config/regex.csv') as regex_file:
-        regex_csv = csv.DictReader(regex_file, delimiter=',')
-        regex_list = [entry for entry in regex_csv]
-        await update_topic.send(value={'type':'regex', 'list':regex_list})
+    await update_topic.send(value={'type':'regex'})
 
 @app.task
 async def load_whitelist():
-    with open('streaming/wordmatching/config/whitelist.csv') as whitelist_file:
-        whitelist_csv = csv.DictReader(whitelist_file, delimiter=',')
-        whitelist = [entry['domain'] for entry in whitelist_csv]
-        await update_topic.send(value={'type':'whitelist', 'list':whitelist})
-
-
-
-
+    await update_topic.send(value={'type':'whitelist'})
 

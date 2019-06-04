@@ -1,5 +1,6 @@
 from app import app, api
 from app.operations import Regex, Fuzzy, Whitelist
+from app.utils import Streaming
 from flask import Flask, request, g
 from flask_restful import Api, Resource, reqparse
 from flask_jwt_extended import (
@@ -9,6 +10,7 @@ from flask_jwt_extended import (
 
 from bson.json_util import dumps as loadbson
 import json
+import asyncio
 
 
 class APIWhitelists(Resource):
@@ -33,6 +35,7 @@ class APIWhitelists(Resource):
     def post(self):
         args = self.args.parse_args()
         result = Whitelist(args.value).create()
+        asyncio.run(Streaming('whitelist').refresh())
         return result
 
 api.add_resource(APIWhitelists, '/api/v1/whitelist')
@@ -43,6 +46,7 @@ class APIWhitelist(Resource):
 
     def delete(self, whitelist_name):
         result = Whitelist(whitelist_name).delete()
+        asyncio.run(Streaming('whitelist').refresh())
         return result
 
 api.add_resource(APIWhitelist, '/api/v1/whitelist/<string:whitelist_name>')
@@ -66,6 +70,7 @@ class APIRegex(Resource):
     def post(self):
         args = self.args.parse_args()
         result = Regex(args.value).create(args.score)
+        asyncio.run(Streaming('regex').refresh())
         return result
 
     def get(self):
@@ -95,9 +100,8 @@ class APIFuzzy(Resource):
     def post(self):
         args = self.args.parse_args()
         result = Fuzzy(args.value).create(args.likelihood, args.score)
-        # Todo: Send event to refresh filters
+        asyncio.run(Streaming('fuzzy').refresh())
         return result
-
 
     def get(self):
         args = self.args.parse_args()
@@ -113,12 +117,14 @@ class APIFilter(Resource):
     def delete(self, filter_type, filter_name):
         if filter_type == 'fuzzy':
             result = Fuzzy(filter_name).delete()
-            # Todo: Send event to refresh filters
+            asyncio.run(Streaming('fuzzy').refresh())
+
         elif filter_type == 'regex':
             result = Regex(filter_name).delete()
-            # Todo: Send event to refresh filters
+            asyncio.run(Streaming('regex').refresh())
         else:
             result = {'result':'failed', 'data':'Invalid filter type '}
+
         return result
 
 
