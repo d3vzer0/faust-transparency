@@ -25,41 +25,32 @@ filters = {
 @app.agent(cert_topic, concurrency=5)
 async def regex_match_ct(certificates):
     async for certificate in certificates:
-        domain = certificate['entry_cn']
-        for regex in filters['regex']:
-            if regex.match(domain) and domain not in filters['whitelist']:
-                result = {'source':'regex', 'input':regex.pattern, 
-                    'value': domain, 'proto':'https' }
-                await matched_topic.send(value=result)
-                break
+        if 'CN' in certificate['entry']['subject']:
+            domain = certificate['entry']['subject']['CN']
+            for regex in filters['regex']:
+                if regex.match(domain) and domain not in filters['whitelist']:
+                    result = {'source':'regex', 'input':regex.pattern, 
+                        'value': domain, 'proto':'https' }
+                    await matched_topic.send(value=result)
+                    break
 
 @app.agent(cert_topic, concurrency=5)
 async def fuzzy_match_ct(certificates):
     async for certificate in certificates:
-        domain = certificate['entry_cn']
-        for fuzzy in filters['fuzzy']:
-            compare = fuzz.partial_ratio(domain, fuzzy['value'])
-            if compare >= int(fuzzy['likelihood']) and domain not in filters['whitelist']:
-                result = {'source':'fuzzy', 'input':fuzzy['value'], 
-                    'value': domain, 'proto':'https' }
-                await matched_topic.send(value=result)
-                break
+        if 'CN' in certificate['entry']['subject']:
+            domain = certificate['entry']['subject']['CN']
+            for fuzzy in filters['fuzzy']:
+                compare = fuzz.partial_ratio(domain, fuzzy['value'])
+                if compare >= int(fuzzy['likelihood']) and domain not in filters['whitelist']:
+                    result = {'source':'fuzzy', 'input':fuzzy['value'], 
+                        'value': domain, 'proto':'https' }
+                    await matched_topic.send(value=result)
+                    break
 
 @app.agent(update_topic)
 async def update_filters(matchers):
     async for matcher in matchers:
-        print(matcher)
-        if matcher['type'] == 'regex':
-            filters['regex'] = []
-            regex_filters = Regex.objects()
-            for entry in regex_filters:
-                try:
-                    filters['regex'].append(re.compile(entry['value']))
-                    regex_scoring[entry['value']] = entry['score']
-                except Exception as err:
-                    pass
-
-        elif matcher['type'] == 'fuzzy':
+        if matcher['type'] == 'fuzzy':
             filters['fuzzy'] = []
             fuzzy_filters = Fuzzy.objects()
             for entry in fuzzy_filters:
@@ -72,9 +63,16 @@ async def update_filters(matchers):
             for entry in whitelist:
                 filters['whitelist'].append(entry['domain'])
 
-        print(filters)
-
-
+        elif matcher['type'] == 'regex':
+            filters['regex'] = []
+            regex_filters = Regex.objects()
+            for entry in regex_filters:
+                try:
+                    filters['regex'].append(re.compile(entry['value']))
+                    regex_scoring[entry['value']] = entry['score']
+                except Exception as err:
+                    print('Invalid regex: {0}'.format(entry['value']))
+                    pass
 
 @app.agent(matched_topic)
 async def matched_certs(matches):

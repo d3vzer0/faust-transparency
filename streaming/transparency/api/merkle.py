@@ -36,8 +36,7 @@ class MerkleTree(Certificate):
         entry = Certificate(crypto.load_certificate(crypto.FILETYPE_ASN1, data_object.LeafCert.CertData)).details()
         chain = [Certificate(crypto.load_certificate(crypto.FILETYPE_ASN1, cert.CertData)).details() \
             for cert in data_object.Chain]
-        result = {'type':'precert', 'entry_cn':entry['subject']['CN'], 'issuer_cn':entry['issuer']['CN'], 'fingerprint':entry['fingerprint'],
-            'not_before':entry['not_before'], 'not_after':entry['not_after']}
+        result = {'type':'precert', 'entry':entry, 'chain':chain}
         return result
        
     def log(self):
@@ -45,8 +44,7 @@ class MerkleTree(Certificate):
         entry = Certificate(crypto.load_certificate(crypto.FILETYPE_ASN1, ctl.Certificate.parse(self.leaf_data.Entry).CertData)).details()
         chain = [Certificate(crypto.load_certificate(crypto.FILETYPE_ASN1, cert.CertData)).details() \
             for cert in extra_data.Chain]
-        result = {'type':'log', 'entry_cn':entry['subject']['CN'], 'issuer_cn':entry['issuer']['CN'], 'fingerprint':entry['fingerprint'],
-            'not_before':entry['not_before'], 'not_after':entry['not_after']}
+        result = {'type':'log', 'entry':entry, 'chain':chain}
         return result
 
     def parse(self):
