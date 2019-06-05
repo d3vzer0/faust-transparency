@@ -2,7 +2,7 @@
   <b-card>
     <b-form method="get" @submit.prevent="filter_hits">
       <b-row>
-        <b-col cols="11">
+        <b-col xl="11" md="10" cols="12">
           <b-form-input type="text" v-model="search_filter" placeholder="Domain"></b-form-input>
         </b-col>
         <b-col>
