@@ -30,7 +30,7 @@ async def regex_match_ct(certificates):
             for regex in filters['regex']:
                 if regex.match(domain) and domain not in filters['whitelist']:
                     result = {'source':'regex', 'input':regex.pattern, 
-                        'value': domain, 'proto':'https' }
+                        'value': domain, 'proto':'https', 'data':certificate['entry'] }
                     await matched_topic.send(value=result)
                     break
 
@@ -43,7 +43,7 @@ async def fuzzy_match_ct(certificates):
                 compare = fuzz.partial_ratio(domain, fuzzy['value'])
                 if compare >= int(fuzzy['likelihood']) and domain not in filters['whitelist']:
                     result = {'source':'fuzzy', 'input':fuzzy['value'], 
-                        'value': domain, 'proto':'https' }
+                        'value': domain, 'proto':'https', 'data':certificate['entry'] }
                     await matched_topic.send(value=result)
                     break
 
@@ -77,8 +77,8 @@ async def update_filters(matchers):
 @app.agent(matched_topic)
 async def matched_certs(matches):
     async for match in matches:
-        print(match['value'], match['source'], match['input'])
-        await Match(match['value']).create('transparency', match['source'], match['input'])
+        url = '{0}://{1}'.format(match['proto'], match['value']).replace('*.', '')
+        await Match(url).create('transparency', match['source'], match['input'], match['data'])
 
 
 @app.task

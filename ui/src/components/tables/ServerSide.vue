@@ -5,7 +5,6 @@
           <b-button size="sm" @click.stop="row.toggleDetails" variant="primary" class="mr-2">
             {{ row.detailsShowing ? 'Hide' : 'Show'}} Details
           </b-button>
-        
       </template>
   
       <template slot="show_delete" slot-scope="row">
@@ -13,10 +12,18 @@
       </template>
 
       <template slot="row-details" slot-scope="row">
-      <b-card>
-        <b-row class="mb-2" v-for="detail in details" :key="detail">
-          <b-col sm="3" class="text-sm-right"><b>{{detail}}</b></b-col>
-          <b-col>{{row.item[detail]}}</b-col>
+      <b-card v-if="row.item.datasource == 'transparency'">
+        <b-row >
+          <b-col><b>Fingerprint</b></b-col>
+          <b-col>{{row.item.details.fingerprint}}</b-col>
+        </b-row>
+        <b-row>
+          <b-col><b>Issuer</b></b-col>
+          <b-col>{{row.item.details.issuer.CN}}</b-col>
+        </b-row>
+        <b-row>
+          <b-col><b>Not Before / Not After</b></b-col>
+          <b-col>{{from_unix(row.item.details.not_before.replace('Z',''))}} / {{ from_unix(row.item.details.not_after.replace('Z',''))}}</b-col>
         </b-row>
       </b-card>
     </template>
@@ -100,7 +107,7 @@ export default {
         .then(response => this.get_results_filtered())
     },
     from_unix (unix_timestamp) {
-      var from_miliseconds = unix_timestamp / 1000
+      var from_miliseconds = Math.floor(unix_timestamp / 1000)
       var datetime = this.$moment.unix(from_miliseconds).format('YYYY-MM-DD HH:mm:ss')
       return datetime
     }

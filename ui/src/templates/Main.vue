@@ -14,11 +14,6 @@
             </b-link>
           </b-nav-item>
           <b-nav-item class="nav-item">
-            <b-link to="/trannsparency" active-class="active">
-              <span class="nav-item-icon"><font-awesome-icon icon="certificate" /></span>
-            </b-link>
-          </b-nav-item>
-          <b-nav-item class="nav-item">
             <b-link to="/snapshots" active-class="active">
               <span class="nav-item-icon"><font-awesome-icon icon="camera-retro" /></span>
             </b-link>

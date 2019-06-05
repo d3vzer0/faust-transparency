@@ -25,9 +25,10 @@ export default {
         url: 'url',
         pattern_match: 'matching.value',
         source_filter: 'matching.name',
+        details: 'matching.data',
         datasource: 'datasource',
         id: '_id.$oid',
-        _showDetails: false
+        _showDetails: true
       },
       output: {
         timestamp: { label: 'Timestamp' },
@@ -35,6 +36,7 @@ export default {
         datasource: { label:'Datasource' },
         source_filter: { label: 'Filter type'},
         pattern_match: { label:'Filter match' },
+        show_details: {label :'Details'}
       }
     }
   }

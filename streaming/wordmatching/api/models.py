@@ -26,6 +26,7 @@ class Fuzzy(db.Document):
 class Matching(db.EmbeddedDocument):
     name = db.StringField(required=True, choices=matching_types)
     value = db.StringField(required=True, max_length=500)
+    data = db.DictField()
 
 class Matches(db.Document):
     timestamp = db.DateTimeField(required=False, default=datetime.datetime.now)
