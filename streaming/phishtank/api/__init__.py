@@ -1,0 +1,1 @@
+from streaming.phishtank.api.reported import Reported as Reported
