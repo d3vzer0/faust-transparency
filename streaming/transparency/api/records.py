@@ -18,8 +18,6 @@ class Records:
                 return await self.request(session, url)
     
         except Exception as err:
-            print(err)
-            print('Unable to fetch records: {0}'.format(url))
             return None
 
     async def latest(self):
@@ -28,6 +26,4 @@ class Records:
             async with aiohttp.ClientSession(timeout=self.timeout) as session:
                 return await self.request(session, url)
         except Exception as err:
-            print(err)
-            print('Unable to fetch tree size: {0}'.format(url))
-            return err
+            return None

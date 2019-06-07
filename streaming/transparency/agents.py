@@ -1,12 +1,17 @@
 from streaming.app import app
 from streaming.config import config
 from streaming.transparency.api import Records, Sources, MerkleTree
+import faust
+
+class Tree(faust.Record):
+    size: int
+    source: str
 
 # Topics
 sources_topic = app.topic('ct-sources')
-changed_topic = app.topic('ct-treesize-changed')
-update_topic = app.topic('ct-update-treesize')
-cert_topic = app.topic('ct-certs')
+changed_topic = app.topic('ct-sources-changed', value_type=Tree)
+update_topic = app.topic('ct-treesize-update', value_type=Tree)
+cert_decoded_topic = app.topic('ct-certs-decoded')
 
 # Tables
 states_table = app.Table('ct-source-states', default=int)
@@ -16,44 +21,45 @@ async def get_tree_size(sources):
     async for source in sources:
         try:
             stats = await Records(source).latest()
-            result = {'source': source, 'stats': stats}
-            if not source in states_table: await update_treesize.send(value=result)
-            if stats['tree_size'] > states_table[source]:  
+            result = {'source': source, 'size': stats['tree_size']}
+            if (not source in states_table) or (stats['tree_size'] > states_table[source]):
                 await changed_topic.send(value=result) 
         except Exception as err:
-            print(err)
             pass
     
-
 @app.agent(changed_topic, concurrency=10) 
 async def process_sources(sources):
     async for source in sources:
-        min_count = states_table[source['source']]
-        max_count = source['stats']['tree_size']
-        results = await Records(source['source']).get(min_count, max_count)
-        if results:
-            await update_treesize.send(value={'source': source['source'], 
-                'stats': {'tree_size':max_count}})
-            for certificate in results['entries']:
-                await decode_certs.send(value=certificate)
+        min_count = states_table[source.source]
+        max_count = source.size
+        results = await Records(source.source).get(min_count, max_count)
+        if results and 'entries' in results:
+             # Temporary try/except to debug a log without entries
+            try:
+                await update_treesize.send(value={'source': source.source, 'size':max_count})
+                for certificate in results['entries']:
+                    await decode_certs.send(value=certificate)
+            except Exception as err:
+                pass
 
+@app.agent(update_topic)
+async def update_treesize(sources):
+    async for source in sources.group_by(Tree.source):
+        states_table[source.source] = source.size
 
 @app.agent()
 async def decode_certs(certificates):
     async for certificate in certificates:
         try:
             parsed_cert = MerkleTree(certificate).parse()
-            await cert_topic.send(value=parsed_cert)
+            await cert_decoded_topic.send(value=parsed_cert)
         except Exception as err:
             pass
 
-@app.agent()
+@app.agent(update_topic)
 async def update_treesize(sources):
-    async for source in sources:
-        source_url = source['source']
-        source_size = source['stats']['tree_size']
-        states_table[source_url] = source_size
-
+    async for source in sources.group_by(Tree.source):
+        states_table[source.source] = source.size
 
 @app.timer(interval=15)
 async def get_sources():
