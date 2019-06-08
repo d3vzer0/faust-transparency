@@ -1,7 +1,7 @@
 from streaming.config import config
 import faust
 
-app = faust.App('faust-transparancy', 
+app = faust.App(config['stream']['name'], 
     broker=config['stream']['host'],
     autodiscover=[config['stream']['app']],
     store='rocksdb://',

@@ -17,7 +17,7 @@ class Compare:
     def fuzzy(self, fuzzy_list):
         for fuzzy in fuzzy_list:
             compare = fuzz.partial_ratio(self.value, fuzzy['value'])
-            if compare >= int(fuzzy['likelihood']) and domain not in self.whitelist:
+            if compare >= int(fuzzy['likelihood']) and self.value not in self.whitelist:
                 result = {'source':'fuzzy', 'input':fuzzy['value'], 'value': self.value }
                 return result
         return None

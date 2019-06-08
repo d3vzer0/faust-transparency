@@ -1,6 +1,6 @@
-from streaming.wordmatching.api import Match
-from streaming.wordmatching.api import Compare
+from streaming.wordmatching.api.match import Match
 from streaming.wordmatching.api.models import Fuzzy, Regex, Whitelist
+from streaming.wordmatching.api import Compare
 from streaming.app import app
 from streaming.config import config
 from fuzzywuzzy import fuzz
@@ -38,6 +38,7 @@ async def matched_certs(matches):
 @app.agent(cert_topic, concurrency=5)
 async def regex_match_ct(certificates):
     async for certificate in certificates:
+        print(certificate)
         if 'CN' in certificate['entry']['subject']:
             domain = certificate['entry']['subject']['CN']
             match_domain = Compare(domain, filters['whitelist']).regex(filters['regex'])
@@ -53,6 +54,7 @@ async def fuzzy_match_ct(certificates):
 
 @app.agent(update_topic)
 async def update_filters(matchers):
+    print(matchers)
     async for matcher in matchers:
         if matcher['type'] == 'fuzzy':
             filters['fuzzy'] = [{'value':entry['value'], 'likelihood':entry['likelihood']} for entry in Fuzzy.objects()]

@@ -26,7 +26,8 @@ config = {
         'port': os.getenv('DBPORT', 27017)
     },
     'stream': {
-        'app': os.getenv('STREAM_NAME', 'streaming.transparency'),
+        'app': os.getenv('STREAM_TYPE', 'streaming.transparency'),
+        'name': os.getenv('STREAM_NAME', 'nootnoot-transparency'),
         'host': os.getenv('KAFKA_HOST', 'kafka://127.0.0.1:29092')
     }
 }
