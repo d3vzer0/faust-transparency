@@ -1,0 +1,29 @@
+# This is the default settings file for the phishyme playbook.
+# None of the variables will have to be changed for testing. In it's current state the following will be deployed:
+
+# API on https://<your_ip>:8443
+# UI on https://<your_ip>:9443
+
+# A default firewall won't be enabled, so be carefull what you expose!
+
+# PS. The certs role will create self-signed certificates. You can replace these with your own certs later on
+
+
+phishyme:
+  install_dir: "/opt/phishyme" # Install location for source code
+  api_dest: "https://{{ hostvars['rtn-dev-01']['ansible_default_ipv4']['address'] }}:8443" # IP/Domain used inside the UI to perform API calls
+  cors: "*" # Change value to enforce CORS policy (ie. only allow API requests from IP/domain 'X')
+
+database:
+  user: "phishyme" # Username used for Mongo DB
+  db: "phishyme" # Default database for phishyme
+
+proxy:
+  ui:
+    container: "phishyme-ui" # No need to change - container name for our UI container, 
+    domain: "{{ hostvars['rtn-dev-01']['ansible_default_ipv4']['address'] }}" # CN for our self signed cert
+    port: 8443 # Port exposed by nginx that will forward requests to our UI container
+  
+  api:
+    container: "phishyme-api" # No need to change - container name for our API container, 
+    domain: "{{ hostvars['rtn-dev-01']['ansible_default_ipv4']['address'] }}" # CN for our self signed cert
