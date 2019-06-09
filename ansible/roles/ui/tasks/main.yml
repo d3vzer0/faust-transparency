@@ -1,0 +1,45 @@
+
+- name: Create frontend network
+  docker_network:
+    name: frontend_network
+
+- name: Creating config directory
+  file:
+    path: "{{ phishyme.install_dir }}/ui"
+    state: directory
+
+- name: Making sure default install directory is created
+  file:
+    path: "{{ phishyme.install_dir }}"
+    state: directory
+
+- name: Archiving UI components
+  archive:
+    path: "../ui"
+    dest: "../ui.tgz"
+  delegate_to: localhost
+  become: no
+
+- name: Extract UI components to target
+  unarchive:
+    src: "../ui.tgz"
+    dest: "{{ phishyme.install_dir }}"
+
+- name: Build ui container
+  docker_image:
+    name: phishyme/ui
+    path: "{{ phishyme.install_dir }}/ui"
+    buildargs:
+      VUE_APP_BASEAPI: "{{ phishyme.api_dest }}/api/v1"
+    force: yes
+
+- name: Run UI container
+  docker_container:
+    name: phishyme-ui
+    image: phishyme/ui
+    state: started
+    recreate: yes
+    networks:
+      - name: frontend_network
+        aliases:
+          - phishyme-ui

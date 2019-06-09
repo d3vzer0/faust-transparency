@@ -12,8 +12,6 @@ class Tree(faust.Record):
 sources_topic = app.topic('ct-sources')
 changed_topic = app.topic('ct-sources-changed', value_type=Tree)
 cert_decoded_topic = app.topic('ct-certs-decoded')
-
-# Tables
 states_table = app.Table('ct-source-states', default=int)
 
 @app.agent(sources_topic, concurrency=50)

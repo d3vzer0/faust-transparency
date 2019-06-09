@@ -6,7 +6,6 @@ import Main from './templates/Main.vue'
 import Login from './templates/Login.vue'
 
 import Hits from './views/Hits.vue'
-import Transparency from './views/Transparency.vue'
 import Snapshots from './views/Snapshots.vue'
 import Whitelist from './views/Whitelist.vue'
 import Regex from './views/Regex.vue'
@@ -29,11 +28,6 @@ const router = new Router({
           path: '/hits',
           name: 'Hits',
           component: Hits
-        },
-        {
-          path: '/transparency',
-          name: 'Transparency',
-          component: Transparency
         },
         {
           path: '/snapshots',

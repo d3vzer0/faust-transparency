@@ -1,0 +1,15 @@
+- name: Run Selenium Grid container
+  docker_container:
+    image: selenium/hub:latest
+    state: started
+    recreate: yes
+    env:
+      GRID_BROWSER_TIMEOUT: 20
+      GRID_TIMEOUT: 15
+      NODE_MAX_SESSION: 10
+      NODE_MAX_INSTANCES: 10
+
+    networks:
+      - name: backend_network
+        aliases:
+          - grid

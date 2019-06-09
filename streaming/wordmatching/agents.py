@@ -38,7 +38,6 @@ async def matched_certs(matches):
 @app.agent(cert_topic, concurrency=5)
 async def regex_match_ct(certificates):
     async for certificate in certificates:
-        print(certificate)
         if 'CN' in certificate['entry']['subject']:
             domain = certificate['entry']['subject']['CN']
             match_domain = Compare(domain, filters['whitelist']).regex(filters['regex'])
@@ -62,8 +61,7 @@ async def update_filters(matchers):
             filters['whitelist'] = [entry['domain'] for entry in Whitelist.objects()]
         elif matcher['type'] == 'regex':
             filters['regex'] = []
-            regex_filters = Regex.objects()
-            for entry in regex_filters:
+            for entry in Regex.objects():
                 try:
                     filters['regex'].append(re.compile(entry['value']))
                 except Exception as err:
